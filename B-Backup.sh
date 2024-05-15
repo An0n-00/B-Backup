@@ -38,7 +38,7 @@ create_backup() {
     backup_name=""
     until [ ${#backup_name} -ne 0 ]
     do
-      printf "What do you want to call this Backup?: "
+      printf "What do you want to call this Backup? (no spaces): "
       read -r backup_name
     done
     pre_log "LOG: New Backup has this name: $backup_name"
@@ -64,8 +64,8 @@ create_backup() {
       printf "Do you want to encrypt the backup? (y/n): "
       read -r encrypted_backup
       case $encrypted_backup in
-          y) printf "Understood, the Backups are going to be encrypted.\n\n";;
-          n) printf "Understood, the Backups are not going to be encrypted.\n\n";;
+          y) printf "Understood, the backup are going to be encrypted.\n\n";;
+          n) printf "Understood, the backup are not going to be encrypted.\n\n";;
           *) printf "${RED}Invalid Input, please enter y or n.${NC}\n\n"; pre_log "LOG: Invalid Input during questioning for Backup";;
       esac
     done
@@ -76,8 +76,8 @@ create_backup() {
       printf "Do you want to compress the backup? (y/n): "
       read -r compressed_backup
       case $compressed_backup in
-          y) printf "Understood, the Backups are going to be compressed.\n\n";;
-          n) printf "Understood, the Backups are not going to be compressed.\n\n";;
+          y) printf "Understood, the backup are going to be compressed.\n\n";;
+          n) printf "Understood, the backup are not going to be compressed.\n\n";;
           *) printf "${RED}Invalid Input, please enter y or n.${NC}\n\n"; pre_log "LOG: Invalid Input during questioning for Backup";;
       esac
     done
@@ -116,8 +116,8 @@ create_backup() {
       read -r choices
       case $choices in
           y) printf "\nContinuing.\nPlease follow the Instructions from ZIP:\n"; sleep 3;;
-          n) printf "Returning to menu\n"; pre_log "LOG: Backup Cancelled; Returning to menu"; sleep 3; return;;
-          *) printf "${RED}Invalid Input, please enter y or n.${NC}\n"; pre_log "LOG: Invalid Input during questioning for Backup";;
+          n) printf "Returning to menu\n"; pre_log "LOG: Backup Cancelled; Returning to menu"; rm -r $curbinh; sleep 3; return;;
+          *) printf "${RED}Invalid Input, please enter y or n.${NC}\n"; rm -r $curbinh; sleep 3; pre_log "LOG: Invalid Input during questioning for Backup"; return ;;
       esac
     done
     zipname="$curbinh/$backup_name.zip"
@@ -126,14 +126,14 @@ create_backup() {
     if [[ $type == "d" ]]; then
         backupparam=$compressed_backup$encrypted_backup$remove_after_zip
         case $backupparam in
-            nnn) zip -v -r $zipname $path ;;
-            nny) zip -v -r -9 $zipname $path ;;
-            nyn) zip -v -r -e $zipname $path ;;
-            nyy) zip -v -r -9 -e $zipname $path ;;
-            ynn) zip -v -r -m $zipname $path ;;
-            yny) zip -v -r -9 -m $zipname $path ;;
-            yyn) zip -v -r -e -m $zipname $path ;;
-            yyy) zip -v -r -9 -e -m $zipname $path ;;
+            nnn) zip -q -r $zipname $path ;;
+            nny) zip -q -r -9 $zipname $path ;;
+            nyn) zip -q -r -e $zipname $path ;;
+            nyy) zip -q -r -9 -e $zipname $path ;;
+            ynn) zip -q -r -m $zipname $path ;;
+            yny) zip -q -r -9 -m $zipname $path ;;
+            yyn) zip -q -r -e -m $zipname $path ;;
+            yyy) zip -q -r -9 -e -m $zipname $path ;;
         esac
     elif [[ $type == "f" ]]; then
         backupparam=$compressed_backup$encrypted_backup$remove_after_zip
@@ -165,8 +165,8 @@ create_backup() {
 
     printf "Do you want to generate a report? (y/n): "
     read -r choices
-    if [[ $choices == "n" ]]; then
-      printf "No report will be generated\n\n"
+    if [[ $choices != "y" ]]; then
+      printf "No report will be generated.\n\n"
       pre_log "LOG: Backup report cancelled; Returning to menu"
     else
       pre_log "LOG: Generating report"
@@ -212,11 +212,11 @@ restore_backup() {
     clear
     printf "Listing existing backups:\n"
     ls $homefolder/ | grep -v "0log.dll"
-    printf "\nWhich backup do you want to restore? (if you want to exit to menu, hit enter | after restoring a backup, the backup will still be kept in the hidden folder. To remove the backup from $project_name)\nEnter the backup name: "
+    printf "\nWhich backup do you want to ${GREEN}restore?${NC}\nNote:\nIf you want to exit to menu, hit enter.\nAfter restoring a backup, the backup will still be kept in the hidden folder.\nTo remove the backup from $project_name, you will have to use the delete Backup option.\n\nEnter the backup name: "
     read -r backup_name
     if [ -f "$homefolder/backup-$backup_name/$backup_name.zip" ]; then
         report_1="Backup $backup_name exists."
-        printf "Do you want to restore the backup $backup_name to the original path? (y/n): "
+        printf "\nDo you want to restore the backup $backup_name to the original path? (y/n): "
         read -r choices
         if [[ $choices == "n" ]]; then
           report_2="Backup $backup_name was NOT restored to the original path: $original_path"
@@ -224,7 +224,7 @@ restore_backup() {
           read -r choices
           if [[ $choices == "n" ]]; then
             report_3="Backup $backup_name was not restored at all."
-            printf "Returning to menu\n"
+            printf "Returning to menu...\n"
             pre_log "LOG: Backup extract cancelled; Returning to menu"
             return
           fi
@@ -236,11 +236,11 @@ restore_backup() {
           report_3="Backup $backup_name was restored to a custom path: $custom_path"
           return
         fi
-        printf "Restoring backup $backup_name to the original path\n"
+        printf "Restoring backup $backup_name to the original path...\n"
         original_path=$(cat "$homefolder/backup-$backup_name/$project_name.info.dll")
         unzip "$homefolder/backup-$backup_name/$backup_name.zip" -d "$original_path"
         pre_log "LOG: Backup $backup_name was restored to the original path"
-        printf "${GREEN}Backup $backup_name was restored to the original path{NC}\n"
+        printf "${GREEN}Backup $backup_name was restored to the original path${NC}\n"
         report_2="Backup $backup_name was restored to the original path: $original_path"
     else
         report_1="Backup $backup_name did not exist."
@@ -251,17 +251,17 @@ restore_backup() {
 
     printf "Do you want to generate a report? (y/n): "
     read -r choices
-    if [[ $choices == "n" ]]; then
-      printf "No report will be generated\n\n"
+    if [[ $choices != "y" ]]; then
+      printf "No report will be generated..\n\n"
       pre_log "LOG: Backup report cancelled; Returning to menu"
     else
       pre_log "LOG: Generating report"
       printf "Generating report...\n"
       echo -e "$project_name Report ${date}\n" > "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
       echo -e "====================================================\n" >> "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
-      $report_1 >> "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
-      report_2 >> "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
-      report_3 >> "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
+      echo "$report_1" >> "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
+      echo "$report_2" >> "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
+      echo "$report_3" >> "/home/$(whoami)/Desktop/$project_name-Report_Restore-Backup.txt"
       pre_log "LOG: Report was generated"
       printf "Report was generated, check your desktop.\n\n"
     fi
@@ -278,13 +278,13 @@ restore_backup() {
 }
 
 list_backups() {
-    pre_log "LOG: List Backups has been started:"
+    pre_log "LOG: List backup has been started:"
     clear
     printf "Listing existing backups:\n"
     ls $homefolder/ | grep -v "0log.dll"
-
+    printf "\n"
     read -n 1 -s -r -p "Press any key to return to menu..."
-    pre_log "LOG: List Backups has been closed; Returning to menu"
+    pre_log "LOG: List backup has been closed; Returning to menu"
 }
 
 delete_backup() {
@@ -292,7 +292,7 @@ delete_backup() {
     clear
     printf "Listing existing backups:\n"
     ls $homefolder/ | grep -v "0log.dll"
-    printf "${RED}Which backup do you want to delete? (if you want to exit to menu, hit enter)\nEnter the backup name:${NC} "
+    printf "\nWhich backup do you want to ${RED}delete?${NC}\nNote:\nIf you want to exit to menu, hit enter.\n\nEnter the backup name: "
     read backup_name
     pre_log "LOG: Backup $backup_name wants to be deleted"
     if [ -d "$homefolder/backup-$backup_name" ]; then
@@ -306,8 +306,8 @@ delete_backup() {
 
     printf "Do you want to generate a report? (y/n): "
     read -r choices
-    if [[ $choices == "n" ]]; then
-      printf "No report will be generated\n\n"
+    if [[ $choices != "y" ]]; then
+      printf "No report will be generated.\n\n"
       pre_log "LOG: No report will be generated for Delete Backup; Returning to menu"
     else
       pre_log "LOG: Generating report"
@@ -334,7 +334,7 @@ search_file() {
     clear
     printf "Listing existing backups:\n"
     ls $homefolder/ | grep -v "0log.dll"
-    printf "\nIn which backup do you want to search a file in?\nEnter the backup name: "
+    printf "\nIn which backup do you want to search a file in?\n\nEnter the backup name: "
     read -r backup_name
     printf "\nWhich file are you searching for?\nEnter the file name: "
     read -r file_name
@@ -345,7 +345,7 @@ search_file() {
         if unzip -l "$homefolder/backup-$backup_name/$backup_name.zip" | grep -q "$file_name"; then
             report_2="File $file_name found in backup $backup_name."
             pre_log "LOG: File $file_name found in backup $backup_name."
-            printf "${GREEN}File $file_name found in backup $backup_name.${NC}\n"
+            printf "${GREEN}File $file_name found in backup $backup_name.${NC}\n\n"
             printf "Do you want to extract the file to the Desktop? (y/n): "
             read -r choices
             if [[ $choices == "n" ]]; then
@@ -354,7 +354,7 @@ search_file() {
               read -r choices
               if [[ $choices == "n" ]]; then
                 report_4="File $file_name was not extracted at all."
-                printf "Returning to menu\n"
+                printf "Returning to menu...\n"
                 pre_log "LOG: Backup extract cancelled; Returning to menu"
                 return
               fi
@@ -384,8 +384,8 @@ search_file() {
 
     printf "Do you want to generate a report? (y/n): "
     read -r choices
-    if [[ $choices == "n" ]]; then
-      printf "No report will be generated\n\n"
+    if [[ $choices != "y" ]]; then
+      printf "No report will be generated.\n\n"
       pre_log "LOG: No report will be generated for Search File"
     else
       pre_log "LOG: Generating report"
@@ -393,10 +393,10 @@ search_file() {
       echo -e "$project_name Report ${date}\n" > "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
       echo -e "====================================================\n" >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
       echo -e "User searched for file $file_name in backup $backup_name.\n" >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
-      $report_1 >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
-      $report_2 >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
-      $report_3 >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
-      $report_4 >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
+      echo "$report_1" >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
+      echo "$report_2" >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
+      echo "$report_3" >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
+      echo "$report_4" >> "/home/$(whoami)/Desktop/$project_name-Report_Search-File.txt"
       pre_log "LOG: Report was generated"
       printf "Report was generated, check your desktop.\n\n"
     fi
@@ -419,7 +419,7 @@ export_backup() {
     clear
     printf "Listing existing backups:\n"
     ls $homefolder/ | grep -v "0log.dll"
-    printf "\n\nWhich backup do you want to export?\nNote:\nIf you want to exit to menu, hit enter.\nThe backup will still be kept in the secret file path after export.\nTo remove it from there too, you have to delete it\n\nEnter the backup name: "
+    printf "\nWhich backup do you want to export?\nNote:\nIf you want to exit to menu, hit enter.\nThe backup will still be kept in the secret file path after export.\nTo remove it from there too, you have to delete it.\n\nEnter the backup name: "
     read -r backup_name
     if [ -f "$homefolder/backup-$backup_name/$backup_name.zip" ]; then
         report_1="Backup $backup_name exists."
@@ -433,19 +433,19 @@ export_backup() {
           report_2="Backup $backup_name was exported to $export_path."
         else
            report_2="An invalid path was entered."
-           printf "${RED}Invalid path was entered${NC}\n"
+           printf "${RED}Invalid path was entered.${NC}\n\n"
            printf "Do you want to export to Desktop? (y/n): "
             read -r choices
             if [[ $choices == "n" ]]; then
               report_3="Backup $backup_name was not exported."
-              printf "Returning to menu\n"
+              printf "Returning to menu...\n"
               pre_log "LOG: Backup export cancelled; Returning to menu"
               return
             fi
             report_3="Backup $backup_name was exported to Desktop."
           pre_log "LOG: Backup $backup_name was exported to Desktop."
           cp -r "$homefolder/backup-$backup_name" "/home/$(whoami)/Desktop/"
-          printf "${GREEN}Backup $backup_name was exported to Desktop.${NC}\n"
+          printf "${GREEN}Backup $backup_name was exported to Desktop.${NC}\n\n"
         fi
     else
         report_1="Backup $backup_name did not exist."
@@ -456,17 +456,17 @@ export_backup() {
 
     printf "Do you want to generate a report? (y/n): "
     read -r choices
-    if [[ $choices == "n" ]]; then
-      printf "No report will be generated\n\n"
+    if [[ $choices != "y" ]]; then
+      printf "No report will be generated.\n\n"
       pre_log "LOG: No report will be generated for Export Backup"
     else
       pre_log "LOG: Generating report for Export Backup"
       printf "Generating report...\n"
       echo -e "$project_name Report ${date}\n" > "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
       echo -e "====================================================\n" >> "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
-      $report_1 >> "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
-      $report_2 >> "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
-      $report_3 >> "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
+      echo "$report_1" >> "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
+      echo "$report_2" >> "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
+      echo "$report_3" >> "/home/$(whoami)/Desktop/$project_name-Report_Export-Backup.txt"
       pre_log "LOG: Report was generated"
       printf "Report was generated, check your desktop.\n\n"
     fi
@@ -474,7 +474,7 @@ export_backup() {
     printf "Do you want to export another backup? (y/n): "
     read -r choices
     if [[ $choices != "y" ]]; then
-      printf "Returning to menu\n"
+      printf "Returning to menu...\n"
       pre_log "LOG: Finished exporting backups; Returning to menu"
       sleep 3
       report_1=""
@@ -493,14 +493,16 @@ export_backup() {
     export_backup
 }
 
+# End of Manage backup
+
 export_all_backups() {
     pre_log "LOG: Export all backups has been started"
     clear
     printf "Are you sure you want to export all backups? Please note that encryption and compression will still be in place. (y/n): "
     read -r choices
     if [[ $choices != "y" ]]; then
-        pre_log "LOG: Export all backups cancelled; Returning to menu"
-      printf "Returning to menu\n"
+      pre_log "LOG: Export all backups cancelled; Returning to menu"
+      printf "Returning to menu...\n"
       pre_log "LOG: Export all backups cancelled; Returning to menu"
       sleep 3
       return
@@ -519,21 +521,25 @@ export_all_backups() {
       printf "${RED}Exporting to Desktop...${NC}\n"
       cp -r $homefolder/* "/home/$(whoami)/Desktop/"
       printf "${GREEN}All backups were exported to the Desktop.${NC}\n\n"
+      read -n 1 -s -r -p "Press any key to continue..."
+      return
     fi
+    printf "${RED}Invalid path was entered.${NC}\n\n"
     export_path=""
     choices=""
-    read -n 1 -s -r -p "Press any key to continue..."
+    read -n 1 -s -r -p "Press any key to return to menu..."
     pre_log "LOG: Export all backups has been closed"
 }
-# End of Manage Backups
 
 display_help() {
     pre_log "LOG: Help message opened"
     clear
-    printf "Welcome to $project_name!\n\nThis Script is designed to backup files from a designated path to a hidden location within your device with other options like logging, managing backups and encryption for safer storage.\n\n"
-    printf "This script is on GitHub! You can find it here: https://github.com/An0n-00/$project_name/blob/main/$project_name.sh\n\n"
-    printf "If you need help, read this handy documentation: https://github.com/An0n-00/$project_name/blob/main/README.md\n\n"
-    
+    printf "Welcome to $project_name!\n\nThis Script is designed to backup files from a designated path to a hidden location within your device with other options like logging, managing backups and encryption for safer storage.\nNote that if you generate a report of the same kind, the newest report will overwrite the old one. That is unless you have renamed the old file.\n\n"
+    printf "This script is on GitHub!\nYou can find it here: https://github.com/An0n-00/$project_name/blob/main/$project_name.sh\n\n"
+    printf "If you need help, read this handy documentation: https://an0n-00.github.io/$project_name\n\n"
+    printf "If you have noticed a bug or want to suggest a feature, please open an issue on: https://github.com/An0n-00/$project_name/issues\n\n"
+    printf "${RED}Please note that this script CANNOT run with root permissions.\nB-Backup prevents the script from running with root privileges, which could potentially cause harm to the system and cause unwanted side effects while using the script.${NC}\n\n"
+
     pre_log "LOG: Help message closed"
     read -n 1 -s -r -p "Press Enter to return to menu..."
 }
@@ -609,6 +615,7 @@ startup() {
   done
   printf "\n"
 
+  #Permission checker
   if [ $(whoami) == "root" ]; then
       printf "${RED}$project_name CANNOT run with root. Please use an installed User!\n\n"
       read -n 1 -s -r -p "Press Enter to exit..."
@@ -649,7 +656,7 @@ backup_menu() {
       echo "| 3. Restore Backup                       |"
       echo "| 4. List Backups                         |"
       echo "| 5. Search File in Backup                |"
-      echo "| 6. Export Backup(s)                     |"
+      echo "| 6. Export Backup                        |"
       echo "|                                         |"
       echo "| 99. Return to main menu                 |"
       echo "|_________________________________________|"

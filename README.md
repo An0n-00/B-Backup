@@ -78,7 +78,7 @@ B-Backup is a Bash tool designed to simplify file and directory backups on Linux
 > [!IMPORTANT]  
 > **B-Backup CANNOT run with root privileges.**
 >
-> B-Backup prevents the script from running with root privileges, which could potentially cause harm to the system and cause unwanted side effects while using the script (see tests). If the script is run with root privileges, the script will exit with an error message. Therefore, **please run the script as a regular user.**
+> B-Backup prevents the script from running with root privileges, which could potentially cause harm to the system and cause unwanted side effects while using the script. If the script is run with root privileges, the script will exit with an error message. Therefore, **please run the script as a regular user.**
 
 1. Run the script to launch the interactive menu:
 
