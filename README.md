@@ -4,8 +4,8 @@
 
 B-Backup is a Bash tool designed to simplify file and directory backups on Linux systems. It offers a range of features including encryption, compression, logging, and more. Despite its CLI nature, it boasts a sleek and user-friendly interface.
 
-[![Project Phase](https://img.shields.io/static/v1?label=Project%20Phase&message=Finalize&color=blue)](https://github.com/An0n-00/B-Backup/releases)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-Yes-green.svg)](https://GitHub.com/an0n-00/B-Backup/graphs/commit-activity)
+[![Project Phase](https://img.shields.io/static/v1?label=Project%20Phase&message=Submitted&color=green)](https://github.com/An0n-00/B-Backup/releases)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-No-red.svg)](https://GitHub.com/an0n-00/B-Backup/graphs/commit-activity)
 [![GitHub issues](https://img.shields.io/github/issues/an0n-00/B-Backup.svg)](https://GitHub.com/an0n-00/B-Backup/issues/)
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/an0n-00/B-Backup.svg)](https://GitHub.com/an0n-00/B-Backup/pulls/)
 [![GitHub license](https://img.shields.io/github/license/an0n-00/B-Backup.svg)](https://github.com/an0n-00/B-Backup/blob/main/LICENSE)
